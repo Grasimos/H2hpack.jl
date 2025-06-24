@@ -13,10 +13,10 @@ makedocs(
         "API Reference" => "api.md"
     ],
     authors = "Gerasimos Panou",
-    repo = "https://github.com/yourusername/Hpack.jl.git"
+    repo = "https://github.com/grasimos/Hpack.jl.git"
 )
 
 deploydocs(
-    repo = "github.com/yourusername/Hpack.jl.git",
+    repo = "github.com/grasimos/Hpack.jl.git",
     devbranch = "main"
 )
