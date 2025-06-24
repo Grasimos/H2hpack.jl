@@ -1,5 +1,5 @@
 # make.jl for HPACK.jl Documentation
-
+import Pkg; Pkg.add("Documenter")
 using Documenter
 using HPACK
 
