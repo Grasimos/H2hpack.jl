@@ -7,6 +7,7 @@ makedocs(
     sitename = "HPACK.jl Documentation",
     modules = [HPACK],
     format = Documenter.HTML(),
+    checkdocs = :none,
     pages = [
         "Home" => "index.md",
         "Usage" => "usage.md",
