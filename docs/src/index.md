@@ -25,4 +25,3 @@ encoder = HPACKEncoder(max_header_string_size=16384)  # Allow up to 16 KB
 ```
 The default is 8192 bytes, matching common practice and RFC recommendations.
 
-For installation and more, see the [README](../README.md).
