@@ -23,5 +23,19 @@ You can set the maximum allowed header name/value size (in bytes) per encoder:
 ```julia
 encoder = HPACKEncoder(max_header_string_size=16384)  # Allow up to 16 KB
 ```
-The default is 8192 bytes, matching common practice and RFC recommendations.
+
+## API Reference
+
+```@docs
+HPACK.encode
+HPACK.decode
+HPACK.encode_headers
+HPACK.decode_headers
+HPACK.HPACKEncoder
+HPACK.HPACKDecoder
+HPACK.update_table_size!
+HPACK.reset_encoder!
+HPACK.reset_decoder!
+```
+
 
