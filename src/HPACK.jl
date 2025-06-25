@@ -10,7 +10,7 @@ include("Encoder.jl"); using .Encoder
 include("Decoder.jl"); using .Decoder
 
 
-export HPACKEncoder, HPACKDecoder, HPACKError, HuffmanDecodingError, HPACKBoundsError, check_table_size_sync
+export HPACKEncodingOptions, HPACKEncoder, HPACKDecoder, HPACKError, HuffmanDecodingError, HPACKBoundsError, check_table_size_sync
 export HeaderSensitivity, HeaderEntry, StaticTable, DynamicTable, IndexingTable, HPACKStats, HPACKContext
 export encode_headers, decode_headers, reset_encoder!, reset_decoder!
 export hpack_encode_headers, hpack_decode_headers, encode_indexed_header, encode_literal_with_incremental_indexing, encode_literal_without_indexing, encode_literal_never_indexed, encode_table_size_update, is_sensitive_header, determine_encoding_strategy, update_table_size!, set_max_table_size!
