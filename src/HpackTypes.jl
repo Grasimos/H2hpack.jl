@@ -1,6 +1,6 @@
 module HpackTypes
 
-export HeaderSensitivity, HeaderEntry, StaticTable, DynamicTable, IndexingTable, HPACKDecoder, HPACKEncoder, HPACKStats, HPACKContext, check_table_size_sync
+export HPACKEncodingOptions, HeaderSensitivity, HeaderEntry, StaticTable, DynamicTable, IndexingTable, HPACKDecoder, HPACKEncoder, HPACKStats, HPACKContext, check_table_size_sync
 
 """
     HeaderSensitivity
@@ -155,6 +155,31 @@ mutable struct IndexingTable
         new(StaticTable(), DynamicTable(max_dynamic_size))
     end
 end
+"""
+    HPACKEncodingOptions
+
+Παράμετροι για τη ρύθμιση της "έξυπνης" στρατηγικής κωδικοποίησης.
+"""
+struct HPACKEncodingOptions
+    # Ονόματα κεφαλίδων των οποίων η ΤΙΜΗ δεν πρέπει ποτέ να μπει στον πίνακα
+    # (π.χ. "etag", "if-none-match")
+    never_index_value_for_names::Set{String}
+
+    # Ελάχιστο ποσοστό εξοικονόμησης για να ενεργοποιηθεί η Huffman
+    min_huffman_savings_percent::Int
+
+    # Όριο για την "προαγωγή" μιας κεφαλίδας στον δυναμικό πίνακα.
+    # Αν τη δούμε τόσες φορές, την προσθέτουμε.
+    probation_threshold::Int
+
+    function HPACKEncodingOptions(;
+        never_index_value_for_names::Set{String} = Set(["etag", "if-none-match", "x-request-id", "x-trace-id"]),
+        min_huffman_savings_percent::Int = 10,
+        probation_threshold::Int = 2
+    )
+        new(never_index_value_for_names, min_huffman_savings_percent, probation_threshold)
+    end
+end
 
 """
     HPACKDecoder
@@ -179,17 +204,29 @@ end
     HPACKEncoder
 
 HPACK encoder state maintaining the indexing table and encoding context.
-
-# Fields
-- `table::IndexingTable`: Indexing table
-- `huffman_enabled::Bool`: Enable Huffman encoding
 """
 mutable struct HPACKEncoder
     table::IndexingTable
     huffman_enabled::Bool
     max_header_string_size::Int
-    function HPACKEncoder(max_table_size::UInt32 = UInt32(4096), huffman_enabled::Bool = true; max_header_string_size::Int = 8192)
-        new(IndexingTable(max_table_size), huffman_enabled, max_header_string_size)
+
+    # ΝΕΑ ΠΕΔΙΑ ΓΙΑ ΒΕΛΤΙΣΤΟΠΟΙΗΣΗ
+    options::HPACKEncodingOptions
+    candidate_pool::Dict{Pair{String, String}, Int} # Μετρητής για υποψήφιες κεφαλίδες
+
+    function HPACKEncoder(
+        max_table_size::UInt32 = UInt32(4096),
+        huffman_enabled::Bool = true;
+        max_header_string_size::Int = 8192,
+        options::HPACKEncodingOptions = HPACKEncodingOptions()
+    )
+        new(
+            IndexingTable(max_table_size),
+            huffman_enabled,
+            max_header_string_size,
+            options,
+            Dict{Pair{String, String}, Int}() # Αρχικοποίηση του candidate pool
+        )
     end
 end
 

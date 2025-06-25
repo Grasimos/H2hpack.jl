@@ -21,6 +21,13 @@ function benchmark_hpack(; nheaders=50000, ntrials=5)
     end
     GC.gc()  # Free memory after large test
     println()
+
+    println("Pausing for 30 seconds to let the CPU cool down...")
+    sleep(30)
+    # Προσθέστε αυτές τις γραμμές για να καθαρίσετε τους πίνακες
+    println("Resetting encoder and decoder state for warm run...")
+    reset_encoder!(encoder)
+    reset_decoder!(decoder)
     # Warm run: reuse encoder/decoder and data
     println("Benchmarking HPACK encode_headers for $nheaders headers (warm run)...")
     warm_encode_time = @belapsed encode_headers($encoder, $headers)
@@ -63,10 +70,10 @@ function benchmark_hpack(; nheaders=50000, ntrials=5)
     for batch in 1:nbatches
         batch_headers = repeated_custom_headers[(batch-1)*batch_size+1 : batch*batch_size]
         encoded = encode_headers(encoder2, batch_headers)
-        println("Batch $batch: Encoded size: $(length(encoded)) bytes")
+        # println("Batch $batch: Encoded size: $(length(encoded)) bytes")
         try
             decoded = decode_headers(decoder2, encoded)
-            println("Batch $batch: Decoded $(length(decoded)) headers, decoder dynamic table entries: ", length(decoder2.dynamic_table.entries))
+            # println("Batch $batch: Decoded $(length(decoded)) headers, decoder dynamic table entries: ", length(decoder2.dynamic_table.entries))
         catch e
             println("[ERROR] Decoding failed in batch $batch: ", e)
             break
@@ -110,6 +117,27 @@ function benchmark_hpack(; nheaders=50000, ntrials=5)
     nothing
 end
 
+function benchmark_hpack_1000()
+    nheaders = 1000
+    println("\n[1000 entries benchmark] Allocating $nheaders headers...")
+    encoder = HPACKEncoder()
+    decoder = HPACKDecoder(UInt32(4096), 10_000_000)
+    headers = ["h$(i)" => "v$(i)" for i in 1:nheaders]
+    println("Benchmarking HPACK encode_headers for $nheaders headers (cold run)...")
+    encode_time = @belapsed encode_headers($encoder, $headers)
+    encoded = encode_headers(encoder, headers)
+    println("Encode time: $(encode_time*1000) ms, size: $(length(encoded)) bytes")
+    try
+        decode_time = @belapsed decode_headers($decoder, $encoded)
+        println("Decode time: $(decode_time*1000) ms")
+    catch e
+        println("[ERROR] Decoding failed: ", e)
+    end
+    GC.gc()
+    println("\n[1000 entries benchmark complete]")
+end
+
 if abspath(PROGRAM_FILE) == @__FILE__
     benchmark_hpack()
+    benchmark_hpack_1000()
 end
