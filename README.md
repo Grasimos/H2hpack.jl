@@ -31,7 +31,7 @@ A pure Julia implementation of [HPACK](https://datatracker.ietf.org/doc/html/rfc
 ## Installation
 
 ```julia
-pkg> add url="https://github.com/grasimos/Hpack.jl.git"
+pkg> add url="https://github.com/grasimos/HPACK.jl.git"
 ```
 
 ## Basic Usage
