@@ -30,13 +30,19 @@ headers = hpack_decode_headers(decoder, encoded_data)
 """
 function hpack_decode_headers(decoder::HPACKDecoder, data::AbstractVector{UInt8})
     headers = Pair{String, String}[]
+    sizehint!(headers, 32)
     pos = 1
     total_size = 0
     while pos <= length(data)
         byte = data[pos]
+        
+        # ΝΕΑ ΣΗΜΑΙΑ (FLAG)
+        header_added = false
+        
         if (byte & 0x80) == 0x80
             header, pos = decode_indexed_header(decoder, data, pos)
             push!(headers, header)
+            header_added = true
         elseif (byte & 0xC0) == 0x40
             if (byte & 0x3F) == 0
                 header, pos = decode_literal_incremental_new(decoder, data, pos)
@@ -45,7 +51,9 @@ function hpack_decode_headers(decoder::HPACKDecoder, data::AbstractVector{UInt8}
             end
             push!(headers, header)
             add!(decoder.dynamic_table, header.first, header.second)
+            header_added = true
         elseif (byte & 0xE0) == 0x20
+            # Αυτή η περίπτωση δεν προσθέτει κεφαλίδα
             pos = decode_table_size_update(decoder, data, pos)
         elseif (byte & 0xF0) == 0x10
             if (byte & 0x0F) == 0
@@ -54,6 +62,7 @@ function hpack_decode_headers(decoder::HPACKDecoder, data::AbstractVector{UInt8}
                 header, pos = decode_literal_never_indexed_indexed(decoder, data, pos)
             end
             push!(headers, header)
+            header_added = true
         elseif (byte & 0xF0) == 0x00
             if (byte & 0x0F) == 0
                 header, pos = decode_literal_without_indexing_new(decoder, data, pos)
@@ -61,15 +70,26 @@ function hpack_decode_headers(decoder::HPACKDecoder, data::AbstractVector{UInt8}
                 header, pos = decode_literal_without_indexing_indexed(decoder, data, pos)
             end
             push!(headers, header)
+            header_added = true
         else
             throw(HPACKError("Unknown HPACK representation starting with byte: $(string(byte, base=16))"))
         end
-        total_size += sizeof(first(last(headers))) + sizeof(last(last(headers)))
-        if total_size > decoder.max_header_list_size
-            throw(HPACKError("Header list size exceeds SETTINGS_MAX_HEADER_LIST_SIZE"))
+
+        # ΕΛΕΓΧΟΣ ΤΗΣ ΣΗΜΑΙΑΣ ΠΡΙΝ ΤΟΝ ΥΠΟΛΟΓΙΣΜΟ
+        if header_added
+            # Αυτός ο έλεγχος γίνεται μόνο αν προστέθηκε κεφαλίδα
+            last_header = last(headers)
+            # Προσοχή: το last(headers) μπορεί να επιστρέψει nothing από το get_header_by_index
+            if !isnothing(last_header) && !isnothing(last_header.first)
+                total_size += sizeof(last_header.first) + sizeof(last_header.second)
+                if total_size > decoder.max_header_list_size
+                    throw(HPACKError("Header list size exceeds SETTINGS_MAX_HEADER_LIST_SIZE"))
+                end
+            end
         end
     end
-    return headers
+    # Φιλτράρουμε πιθανά `nothing` που μπορεί να προέκυψαν από σφάλματα
+    return filter(h -> !isnothing(h) && !isnothing(h.first), headers)
 end
 
 """
@@ -275,7 +295,7 @@ reset_decoder!(decoder)
 ```
 """
 function reset_decoder!(decoder::HPACKDecoder)
-    clear_dynamic_table!(decoder.dynamic_table)
+    empty!(decoder.dynamic_table)
 end
 
 """

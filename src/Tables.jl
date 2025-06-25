@@ -151,77 +151,48 @@ function Base.getindex(it::IndexingTable, index::Integer)
 end
 
 """
-    find_index(it::IndexingTable, name::String, value::String = "")
+    find_index(it::IndexingTable, name::String, value::String, dyn_dict::Dict{Pair{String, String}, Int})
 
-Find the index of a header entry in the table. Returns the index if found, or 0 if not found. If value is empty, returns the index of the first entry with matching name.
-
-# Usage
-```julia
-idx = find_index(it, "content-type", "text/html")
-```
+Finds the index of a header with an exact match (name and value).
+Uses a pre-computed dictionary for the dynamic table for performance.
 """
-function find_index(it::IndexingTable, name::String, value::String = "")
-    # Fast path: build a Dict for dynamic table if large
-    if length(it.dynamic_table.entries) > 32
-        dyn_dict = Dict{Tuple{String,String},Int}()
-        for (i, entry) in enumerate(it.dynamic_table.entries)
-            dyn_dict[(entry.name, entry.value)] = i
-        end
-        if value == ""
-            # Name-only search
-            for (i, entry) in enumerate(it.static_table.entries)
-                if entry.name == name
-                    return i
-                end
-            end
-            for ((n, _), i) in dyn_dict
-                if n == name
-                    return length(it.static_table) + i
-                end
-            end
-        else
-            for (i, entry) in enumerate(it.static_table.entries)
-                if entry.name == name && entry.value == value
-                    return i
-                end
-            end
-            idx = get(dyn_dict, (name, value), nothing)
-            if idx !== nothing
-                return length(it.static_table) + idx
-            end
-        end
-        return 0
-    end
-    # Fallback: original linear search for small tables
+function find_index(it::IndexingTable, name::String, value::String, dyn_dict::Dict{Pair{String, String}, Int})
+    # 1. Search static table (always linear)
     for (i, entry) in enumerate(it.static_table.entries)
-        if entry.name == name
-            if value == "" || entry.value == value
-                return i
-            end
+        if entry.name == name && entry.value == value
+            return i
         end
     end
-    for (i, entry) in enumerate(it.dynamic_table.entries)
-        if entry.name == name
-            if value == "" || entry.value == value
-                return length(it.static_table) + i
-            end
-        end
+
+    # 2. Search the pre-computed dynamic table dict
+    idx = get(dyn_dict, name => value, 0)
+    if idx > 0
+        return length(it.static_table) + idx
     end
+
     return 0
 end
 
 """
     find_name_index(it::IndexingTable, name::String)
 
-Find the index of the first entry with matching name (regardless of value). Returns the index if found, or 0 if not found.
-
-# Usage
-```julia
-idx = find_name_index(it, "content-type")
-```
+Find the index of the first entry with a matching name (value is ignored).
 """
 function find_name_index(it::IndexingTable, name::String)
-    return find_index(it, name, "")
+    # 1. Search static table
+    for (i, entry) in enumerate(it.static_table.entries)
+        if entry.name == name
+            return i
+        end
+    end
+
+    # 2. Search dynamic table
+    for (i, entry) in enumerate(it.dynamic_table.entries)
+        if entry.name == name
+            return length(it.static_table) + i
+        end
+    end
+    return 0
 end
 
 """

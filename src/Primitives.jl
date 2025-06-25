@@ -8,7 +8,7 @@ using ..Validation
 export encode_integer, decode_integer, encode_string, decode_string, validate_hpack_string, BitBuffer, write_bits!, read_bits, get_bytes, huffman_encode, huffman_decode
 
 """
-    encode_integer(value::Integer, prefix_bits::Int)
+    encode_integer(io::IO, value::Integer, prefix_bits::Int)
 
 Encode an integer using HPACK integer representation with the specified prefix bits.
 
@@ -25,23 +25,22 @@ encode_integer(10, 5)  # [0x0a]
 encode_integer(1337, 5)  # [0x1f, 0x9a, 0x0a]
 ```
 """
-function encode_integer(value::Integer, prefix_bits::Int)
+function encode_integer(io::IO, value::Integer, prefix_bits::Int)
     @assert 1 <= prefix_bits <= 8 "prefix_bits must be between 1 and 8"
     @assert value >= 0 "value must be non-negative"
     max_prefix_value = (1 << prefix_bits) - 1
-    result = UInt8[]
+    
     if value < max_prefix_value
-        push!(result, UInt8(value))
+        write(io, UInt8(value))
     else
-        push!(result, UInt8(max_prefix_value))
+        write(io, UInt8(max_prefix_value))
         value -= max_prefix_value
         while value >= 128
-            push!(result, UInt8((value % 128) | 0x80))
+            write(io, UInt8((value % 128) | 0x80))
             value ÷= 128
         end
-        push!(result, UInt8(value))
+        write(io, UInt8(value))
     end
-    return result
 end
 
 """
@@ -97,7 +96,7 @@ function decode_integer(data::AbstractVector{UInt8}, offset::Int, prefix_bits::I
 end
 
 """
-    encode_string(s::AbstractString, use_huffman::Bool=true)
+    encode_string(io::IO, s::AbstractString, use_huffman::Bool=true)
 
 Encode a string using HPACK string representation. Uses Huffman encoding if `use_huffman` is true and beneficial.
 
@@ -107,23 +106,31 @@ encode_string("hello", true)
 encode_string("world", false)
 ```
 """
-function encode_string(s::AbstractString, use_huffman::Bool=true)
-    if use_huffman && should_huffman_encode(s)
-        encoded_str = huffman_encode(s)
-        len_bytes = encode_integer(length(encoded_str), 7)
-        len_bytes[1] |= 0x80
-        out = Vector{UInt8}(undef, length(len_bytes) + length(encoded_str))
-        copyto!(out, 1, len_bytes, 1, length(len_bytes))
-        copyto!(out, length(len_bytes)+1, encoded_str, 1, length(encoded_str))
-        return out
-    else
-        str_bytes = codeunits(s)
-        len_bytes = encode_integer(length(str_bytes), 7)
-        out = Vector{UInt8}(undef, length(len_bytes) + length(str_bytes))
-        copyto!(out, 1, len_bytes, 1, length(len_bytes))
-        copyto!(out, length(len_bytes)+1, str_bytes, 1, length(str_bytes))
-        return out
+function encode_string(io::IO, s::AbstractString, use_huffman::Bool, options::HPACKEncodingOptions)
+    if use_huffman
+        huff_len = huffman_encoded_length(s)
+        raw_len = sizeof(s)
+        # Έξυπνος έλεγχος για το αν συμφέρει η Huffman
+        if raw_len > 0 && (raw_len - huff_len) * 100 / raw_len >= options.min_huffman_savings_percent
+            encoded_str = huffman_encode(s)
+            
+            # Γράφουμε το μήκος με το huffman bit (1)
+            len_byte_one = IOBuffer()
+            encode_integer(len_byte_one, length(encoded_str), 7)
+            first_byte = read(seekstart(len_byte_one), UInt8)
+            write(io, first_byte | 0x80)
+            write(io, read(len_byte_one))
+            
+            write(io, encoded_str)
+            return
+        end
     end
+
+    # Fallback σε raw string αν η Huffman δεν συμφέρει
+    str_bytes = codeunits(s)
+    # Γράφουμε το μήκος με το huffman bit (0)
+    encode_integer(io, length(str_bytes), 7)
+    write(io, str_bytes)
 end
 
 """
@@ -289,6 +296,13 @@ bytes = get_bytes(buf)
 """
 function get_bytes(buffer::BitBuffer)
     return copy(buffer.data)
+end
+
+# New encode_integer function that returns a Vector{UInt8}
+function encode_integer(value::Integer, prefix_bits::Int)
+    io = IOBuffer()
+    encode_integer(io, value, prefix_bits)
+    return collect(take!(io))
 end
 
 end
