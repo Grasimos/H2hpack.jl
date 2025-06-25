@@ -1,5 +1,7 @@
 # HPACK.jl Usage Examples
 
+> **Note:** Header encoding now uses Julia's `IOBuffer` internally for high performance and low memory overhead.
+
 ## Basic Header Encoding/Decoding
 
 ```julia

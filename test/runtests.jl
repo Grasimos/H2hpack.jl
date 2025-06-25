@@ -37,11 +37,16 @@ end
 end
 
 @testset "String Encoding/Decoding" begin
+    options = HPACKEncodingOptions()
     for s in ["abc", "", "header-value", "\twith\ttabs"]
-        bytes = encode_string(s, false)
+        io = IOBuffer()
+        encode_string(io, s, false, options)
+        bytes = take!(io)
         decoded, _ = decode_string(bytes, 1)
         @test decoded == s
-        bytes_h = encode_string(s, true)
+        io = IOBuffer()
+        encode_string(io, s, true, options)
+        bytes_h = take!(io)
         decoded_h, _ = decode_string(bytes_h, 1)
         @test decoded_h == s
     end
@@ -60,7 +65,7 @@ end
 @testset "IndexingTable" begin
     using .Tables
     it = IndexingTable(UInt32(128))
-    idx = find_index(it, ":method", "GET")
+    idx = find_index(it, ":method", "GET", Dict{Pair{String, String}, Int64}())
     @test idx > 0
     idx2 = find_name_index(it, ":method")
     @test idx2 > 0
@@ -195,7 +200,9 @@ end
     malformed = vcat(UInt8(0x80), data)
     @test_throws HPACKError decode_headers(decoder, malformed)
     # Truncated string encoding
-    s = encode_string("foo", true)[1:2]
+    io = IOBuffer()
+    encode_string(io, "foo", true, HPACKEncodingOptions())
+    s = take!(io)[1:2]
     malformed = vcat(UInt8(0x40), s)
     @test_throws HPACKError decode_headers(decoder, malformed)
     # Invalid table size update
@@ -296,4 +303,17 @@ end
             @test e isa HPACKError || e isa ArgumentError || e isa BoundsError
         end
     end
+end
+
+@testset "IOBuffer Primitives" begin
+    io = IOBuffer()
+    encode_integer(io, 42, 5)
+    bytes = take!(io)
+    val, _ = decode_integer(bytes, 1, 5)
+    @test val == 42
+    io = IOBuffer()
+    encode_string(io, "foobar", true, HPACKEncodingOptions())
+    bytes = take!(io)
+    str, _ = decode_string(bytes, 1)
+    @test str == "foobar"
 end
