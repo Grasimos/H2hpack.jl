@@ -32,64 +32,55 @@ function hpack_decode_headers(decoder::HPACKDecoder, data::AbstractVector{UInt8}
     headers = Pair{String, String}[]
     sizehint!(headers, 32)
     pos = 1
-    total_size = 0
+    current_header_list_size = 0
+
     while pos <= length(data)
         byte = data[pos]
         
-        # ΝΕΑ ΣΗΜΑΙΑ (FLAG)
-        header_added = false
+        local header::Pair{String, String}
         
         if (byte & 0x80) == 0x80
             header, pos = decode_indexed_header(decoder, data, pos)
-            push!(headers, header)
-            header_added = true
         elseif (byte & 0xC0) == 0x40
             if (byte & 0x3F) == 0
                 header, pos = decode_literal_incremental_new(decoder, data, pos)
             else
                 header, pos = decode_literal_incremental_indexed(decoder, data, pos)
             end
-            push!(headers, header)
             add!(decoder.dynamic_table, header.first, header.second)
-            header_added = true
         elseif (byte & 0xE0) == 0x20
-            # Αυτή η περίπτωση δεν προσθέτει κεφαλίδα
+            # This is a dynamic table size update, it does not add a header.
             pos = decode_table_size_update(decoder, data, pos)
+            continue # Skip to the next iteration
         elseif (byte & 0xF0) == 0x10
             if (byte & 0x0F) == 0
                 header, pos = decode_literal_never_indexed_new(decoder, data, pos)
             else
                 header, pos = decode_literal_never_indexed_indexed(decoder, data, pos)
             end
-            push!(headers, header)
-            header_added = true
         elseif (byte & 0xF0) == 0x00
             if (byte & 0x0F) == 0
                 header, pos = decode_literal_without_indexing_new(decoder, data, pos)
             else
                 header, pos = decode_literal_without_indexing_indexed(decoder, data, pos)
             end
-            push!(headers, header)
-            header_added = true
         else
             throw(HPACKError("Unknown HPACK representation starting with byte: $(string(byte, base=16))"))
         end
 
-        # ΕΛΕΓΧΟΣ ΤΗΣ ΣΗΜΑΙΑΣ ΠΡΙΝ ΤΟΝ ΥΠΟΛΟΓΙΣΜΟ
-        if header_added
-            # Αυτός ο έλεγχος γίνεται μόνο αν προστέθηκε κεφαλίδα
-            last_header = last(headers)
-            # Προσοχή: το last(headers) μπορεί να επιστρέψει nothing από το get_header_by_index
-            if !isnothing(last_header) && !isnothing(last_header.first)
-                total_size += sizeof(last_header.first) + sizeof(last_header.second)
-                if total_size > decoder.max_header_list_size
-                    throw(HPACKError("Header list size exceeds SETTINGS_MAX_HEADER_LIST_SIZE"))
-                end
-            end
+        # RFC 7540, Section 6.5.2: The size of a header list is the sum of
+        # the octet lengths of each header's name and value, plus 32 octets for each header.
+        header_entry_size = length(header.first) + length(header.second) + 32
+        current_header_list_size += header_entry_size
+
+        if current_header_list_size > decoder.max_header_list_size
+            throw(HPACKError("Header list size of $current_header_list_size exceeds limit of $(decoder.max_header_list_size)"))
         end
+        
+        push!(headers, header)
     end
-    # Φιλτράρουμε πιθανά `nothing` που μπορεί να προέκυψαν από σφάλματα
-    return filter(h -> !isnothing(h) && !isnothing(h.first), headers)
+    
+    return headers
 end
 
 """
