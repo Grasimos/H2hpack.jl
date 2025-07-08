@@ -6,7 +6,7 @@ using ..Primitives: decode_integer, decode_string
 using ..Exc: HPACKError, HPACKBoundsError
 
 
-export hpack_decode_headers, decode_indexed_header, decode_literal_incremental_new, decode_literal_incremental_indexed, decode_literal_never_indexed_new, decode_literal_never_indexed_indexed, decode_literal_without_indexing_indexed, decode_literal_without_indexing_new, decode_table_size_update, decode_string, get_header_by_index, reset_decoder!, set_max_table_size!
+export hpack_decode_headers, decode_indexed_header, decode_literal_incremental_new, decode_literal_incremental_indexed, decode_literal_never_indexed_new, decode_literal_never_indexed_indexed, decode_literal_without_indexing_indexed, decode_literal_without_indexing_new, decode_table_size_update, decode_string, get_header_by_index, reset_decoder!, set_max_table_size!, set_max_header_list_size!
 
 const HPACK_STATIC_TABLE_SIZE = 61 # RFC 7541 Appendix B
 
@@ -311,6 +311,17 @@ set_max_table_size!(decoder, 4096)
 function set_max_table_size!(decoder::HPACKDecoder, size::Int)
     decoder.max_table_size = size
     resize!(decoder.dynamic_table, UInt32(size))
+end
+
+"""
+    set_max_header_list_size!(decoder::HPACKDecoder, size::Integer)
+
+Update the maximum allowed size of the decoded header list.
+"""
+function set_max_header_list_size!(decoder::HPACKDecoder, size::Integer)
+    decoder.max_header_list_size = Int(size)
+    println(" HPACK: Decoder max header list size updated to $(decoder.max_header_list_size) bytes.")
+    return
 end
 
 end

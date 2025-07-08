@@ -13,7 +13,7 @@ include("Decoder.jl"); using .Decoder
 export HPACKEncodingOptions, HPACKEncoder, HPACKDecoder, HPACKError, HuffmanDecodingError, HPACKBoundsError, check_table_size_sync
 export HeaderSensitivity, HeaderEntry, StaticTable, DynamicTable, IndexingTable, HPACKStats, HPACKContext
 export encode_headers, decode_headers, reset_encoder!, reset_decoder!
-export hpack_encode_headers, hpack_decode_headers, encode_indexed_header, encode_literal_with_incremental_indexing, encode_literal_without_indexing, encode_literal_never_indexed, encode_table_size_update, is_sensitive_header, determine_encoding_strategy, update_table_size!, set_max_table_size!
+export hpack_encode_headers, hpack_decode_headers, encode_indexed_header, encode_literal_with_incremental_indexing, encode_literal_without_indexing, encode_literal_never_indexed, encode_table_size_update, is_sensitive_header, determine_encoding_strategy, update_table_size!, set_max_table_size!, set_max_header_list_size!
 export HuffmanEncoder, HuffmanDecoder, HuffmanNode, HUFFMAN_ENCODER, HUFFMAN_DECODER, HUFFMAN_TABLE, huffman_encode, huffman_decode, huffman_encoded_length, should_huffman_encode, is_leaf
 export encode_integer, decode_integer, encode_string, decode_string, validate_hpack_string, BitBuffer, write_bits!, read_bits, get_bytes
 export add!, find_index, find_name_index, resize!, size, max_size, STATIC_TABLE
