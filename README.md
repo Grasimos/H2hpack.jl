@@ -2,11 +2,7 @@
 
 **This HPACK module has made for educational purposes.**
 
-- If you use this code in production, you must ensure strict compliance with the HPACK and HTTP/2 specifications, including:
-  - Always synchronizing encoder and decoder dynamic table sizes and updates.
-  - Never sharing encoder/decoder objects between connections.
-  - Processing header blocks and table size updates in strict order.
-  - Handling all error cases gracefully (never crash on malformed or out-of-bounds input).
+- If you use this code in production, you must ensure strict compliance with the HPACK and HTTP/2 
 
 **Author's intent:** This module is designed as a reference implementation and as a foundation for a full HTTP/2 protocol stack in Julia. Use with care in production environments.
 
@@ -118,4 +114,5 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ## Author
 
-Gerasimos Panou <gerasimos.panou@gmail.com>
+Gerasimos Panou 
+
