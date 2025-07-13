@@ -1,5 +1,5 @@
 using Test
-using HPACK
+using H2hpack
 using Random
 using BenchmarkTools: @btime
 
@@ -53,7 +53,7 @@ end
 end
 
 @testset "Dynamic Table" begin
-    using .HPACK.Tables
+    using .H2hpack.Tables
     dt = DynamicTable(UInt32(4096))
     add!(dt, "a", "1")
     add!(dt, "b", "2")
