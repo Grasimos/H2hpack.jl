@@ -1,4 +1,4 @@
-module HPACK
+module H2hpack
 
 include("HpackTypes.jl"); using .HpackTypes
 include("Validation.jl"); using .Validation
