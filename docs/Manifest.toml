@@ -75,7 +75,7 @@ git-tree-sha1 = "b981ed24de5855f20fce5b8cb767c179f93e4268"
 uuid = "f8c6e375-362e-5223-8a59-34ff63f689eb"
 version = "2.50.0+0"
 
-[[deps.H2hpack]]
+[[deps.Http2Hpack]]
 deps = ["Documenter", "Test"]
 path = ".."
 uuid = "03a3583f-3b84-4ec3-931d-7334ff455684"
