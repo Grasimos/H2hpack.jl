@@ -4,8 +4,8 @@ using Documenter
 using Http2Hpack
 
 makedocs(
-    sitename = "HPACK.jl Documentation",
-    modules = [HPACK],
+    sitename = "Http2Hpack.jl Documentation",
+    modules = [Http2Hpack],
     format = Documenter.HTML(),
     checkdocs = :none,
     pages = [
