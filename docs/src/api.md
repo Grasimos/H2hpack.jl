@@ -1,4 +1,4 @@
-# HPACK.jl
+# H2hpack.jl
 
 Welcome to the documentation for HPACK.jl!
 
