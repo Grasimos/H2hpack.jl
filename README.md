@@ -8,7 +8,7 @@
 
 ---
 
-# Http2hpack.jl
+# Http2Hpack.jl
 
 [![Build Status](https://github.com/grasimos/Hpack.jl/workflows/CI/badge.svg)](https://github.com/yourusername/H2hpack.jl/actions)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -28,13 +28,13 @@ A pure Julia implementation of [HPACK](https://datatracker.ietf.org/doc/html/rfc
 ## Installation
 
 ```julia
-pkg> add H2hpack
+pkg> add Http2Hpack
 ```
 
 ## Basic Usage
 
 ```julia
-using H2hpack
+using Http2Hpack
 
 # Stateless encoding/decoding
 headers = ["content-type" => "text/html", "accept" => "*/*"]
@@ -54,7 +54,7 @@ encoder = HPACKEncoder(max_header_string_size=16384)
 ## Advanced Usage
 
 ```julia
-using H2hpack
+using Http2Hpack
 ctx = hpack_context(max_table_size=4096, huffman_enabled=true)
 stats = get_stats(ctx)
 reset_stats!(ctx)
@@ -89,7 +89,7 @@ See `docs/usage.md` for more detailed examples.
 Run the test suite with:
 
 ```julia
-using Pkg; Pkg.test("H2hpack")
+using Pkg; Pkg.test("Http2Hpack")
 ```
 
 ## Benchmark Results
