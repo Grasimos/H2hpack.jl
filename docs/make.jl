@@ -1,7 +1,7 @@
 # make.jl for HPACK.jl Documentation
 import Pkg; Pkg.add("Documenter")
 using Documenter
-using HPACK
+using Http2Hpack
 
 makedocs(
     sitename = "HPACK.jl Documentation",
@@ -14,10 +14,10 @@ makedocs(
         "API Reference" => "api.md"
     ],
     authors = "Gerasimos Panou",
-    repo = "https://github.com/grasimos/H2hpack.jl.git"
+    repo = "https://github.com/grasimos/Http2Hpack.jl.git"
 )
 
 deploydocs(
-    repo = "github.com/grasimos/H2hpack.jl.git",
+    repo = "github.com/grasimos/Http2Hpack.jl.git",
     devbranch = "main"
 )
