@@ -1,5 +1,5 @@
 using Test
-using HPACK
+using H2hpack
 
 function test_hpack_sync()
     println("\n--- HPACK Dynamic Table Sync Test ---")
