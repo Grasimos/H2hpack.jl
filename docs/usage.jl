@@ -1,6 +1,6 @@
 # HPACK.jl Usage Examples
 
-using HPACK
+using Http2Hpack
 
 # --- Basic Header Encoding/Decoding ---
 encoder = HPACKEncoder()
