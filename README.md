@@ -8,9 +8,9 @@
 
 ---
 
-# HPACK.jl
+# H2hpack.jl
 
-[![Build Status](https://github.com/grasimos/Hpack.jl/workflows/CI/badge.svg)](https://github.com/yourusername/Hpack.jl/actions)
+[![Build Status](https://github.com/grasimos/Hpack.jl/workflows/CI/badge.svg)](https://github.com/yourusername/H2hpack.jl/actions)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 A pure Julia implementation of [HPACK](https://datatracker.ietf.org/doc/html/rfc7541) (HTTP/2 Header Compression), suitable for use in HTTP/2 clients, servers, and proxies.
@@ -28,13 +28,13 @@ A pure Julia implementation of [HPACK](https://datatracker.ietf.org/doc/html/rfc
 ## Installation
 
 ```julia
-pkg> add url="https://github.com/grasimos/HPACK.jl.git"
+pkg> add H2hpack
 ```
 
 ## Basic Usage
 
 ```julia
-using HPACK
+using H2hpack
 
 # Stateless encoding/decoding
 headers = ["content-type" => "text/html", "accept" => "*/*"]
@@ -54,7 +54,7 @@ encoder = HPACKEncoder(max_header_string_size=16384)
 ## Advanced Usage
 
 ```julia
-using HPACK
+using H2hpack
 ctx = hpack_context(max_table_size=4096, huffman_enabled=true)
 stats = get_stats(ctx)
 reset_stats!(ctx)
@@ -89,7 +89,7 @@ See `docs/usage.md` for more detailed examples.
 Run the test suite with:
 
 ```julia
-using Pkg; Pkg.test("HPACK")
+using Pkg; Pkg.test("H2hpack")
 ```
 
 ## Benchmark Results
