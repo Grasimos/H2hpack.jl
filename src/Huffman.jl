@@ -326,7 +326,7 @@ should_huffman_encode(s::AbstractString) = should_huffman_encode(Vector{UInt8}(s
 """
     HuffmanEncoder
 
-Huffman encoder with precomputed encoding table for HPACK.
+Huffman encoder with precomputed encoding table for 
 
 # Usage
 ```julia
@@ -345,7 +345,7 @@ end
 """
     HuffmanDecoder
 
-Huffman decoder with prebuilt decoding tree for HPACK.
+Huffman decoder with prebuilt decoding tree for H2hpack.
 
 # Usage
 ```julia
