@@ -1,10 +1,5 @@
-# ⚠️ Educational Use Warning
 
-**This HPACK module has made for educational purposes.**
-
-- If you use this code in production, you must ensure strict compliance with the HPACK and HTTP/2 
-
-**Author's intent:** This module is designed as a reference implementation and as a foundation for a full HTTP/2 protocol stack in Julia. Use with care in production environments.
+**Author's intent:** This module is designed as a reference implementation and as a foundation for a full HTTP/2 protocol stack in Julia. 
 
 ---
 
