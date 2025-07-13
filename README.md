@@ -8,7 +8,7 @@
 
 ---
 
-# H2hpack.jl
+# Http2hpack.jl
 
 [![Build Status](https://github.com/grasimos/Hpack.jl/workflows/CI/badge.svg)](https://github.com/yourusername/H2hpack.jl/actions)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
