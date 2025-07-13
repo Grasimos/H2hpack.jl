@@ -1,5 +1,5 @@
 using Test
-using H2hpack
+using Http2Hpack
 using Random
 using BenchmarkTools: @btime
 
@@ -53,7 +53,7 @@ end
 end
 
 @testset "Dynamic Table" begin
-    using .H2hpack.Tables
+    using .Http2Hpack.Tables
     dt = DynamicTable(UInt32(4096))
     add!(dt, "a", "1")
     add!(dt, "b", "2")
