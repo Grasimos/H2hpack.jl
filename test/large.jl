@@ -1,5 +1,5 @@
 using Test
-using HPACK
+using H2hpack
 
 @testset "Large Header Block Decoding" begin
     # Paste the byte vector you captured in Step 1
@@ -7,9 +7,9 @@ using HPACK
 
     # Use a fresh decoder with the same settings as your H2 client
     # The H2 client settings had max_header_list_size = 65536
-    decoder = HPACK.HPACKDecoder(UInt32(4096),65536)
+    decoder = H2hpack.HPACKDecoder(UInt32(4096),65536)
 
-    decoded_headers = HPACK.hpack_decode_headers(decoder, failing_header_block)
+    decoded_headers = H2hpack.hpack_decode_headers(decoder, failing_header_block)
 
     # This assertion will fail, reproducing the bug
     @test length(decoded_headers) == 404
