@@ -1,5 +1,5 @@
 push!(LOAD_PATH, "..")
-using HPACK
+using H2hpack
 using BenchmarkTools
 
 function benchmark_hpack(; nheaders=50000, ntrials=5)
