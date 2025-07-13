@@ -1,4 +1,4 @@
-name = "H2hpack"
+name = "Http2Hpack"
 uuid = "03a3583f-3b84-4ec3-931d-7334ff455684"
 license = "MIT"
 authors = ["Gerasimos Panou <gerasimos.panou]@gmail.com>"]
